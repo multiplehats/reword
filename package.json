@@ -1,0 +1,30 @@
+{
+  "name": "reword",
+  "description": "Inline marketing copy editor: click text on any live page, edit it, copy one agent-ready prompt.",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build && pnpm build:standalone",
+    "build:standalone": "node scripts/build-standalone.mjs",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "wxt prepare",
+    "test:e2e": "pnpm build && node test/e2e.mjs",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "happy-dom": "^20.14.5",
+    "playwright": "1.56",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^5.0.2",
+    "web-ext": "^10.5.0",
+    "wxt": "^0.21.3"
+  }
+}
