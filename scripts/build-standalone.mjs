@@ -34,7 +34,7 @@ const userscript = `// ==UserScript==
 // @name         Reword — inline copy editor
 // @namespace    https://github.com/reword
 // @version      ${pkg.version}
-// @description  Click any text on a live page, edit it in place, and copy one prompt your coding agent can apply. Toggle with Alt+Shift+E.
+// @description  Edit copy, remove, move and annotate elements on a live page, then copy one prompt your coding agent can apply. Toggle with Alt+Shift+E.
 // @match        http://*/*
 // @match        https://*/*
 // @grant        GM_registerMenuCommand
@@ -65,7 +65,7 @@ const install = `<!doctype html>
 <body>
 <main>
   <h1>Reword bookmarklet</h1>
-  <p>Drag this button to your bookmarks bar. Click it on any page to open the copy editor; click again to close it.</p>
+  <p>Drag this button to your bookmarks bar. Click it on any page to open Reword; click again to close it.</p>
   <a class="bm" href="${escapeAttr(bookmarklet)}">✎ Reword</a>
   <p>Changes are kept in <code>sessionStorage</code> for that site and tab, so you can reload or move between pages and click the bookmarklet again to continue.</p>
 </main>

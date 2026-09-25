@@ -1,5 +1,5 @@
-import { Overlay } from '../core/overlay';
-import type { Change, ChangeStore } from '../core/types';
+import { createReword, type Reword } from '../core/reword';
+import type { ChangeStore, PrefStore } from '../core/types';
 
 const CHANGES_KEY = 'reword:changes';
 const OPEN_KEY = 'reword:open';
@@ -9,7 +9,7 @@ function sessionStore(): ChangeStore {
   return {
     async load() {
       try {
-        return JSON.parse(sessionStorage.getItem(CHANGES_KEY) ?? '[]') as Change[];
+        return JSON.parse(sessionStorage.getItem(CHANGES_KEY) ?? '[]');
       } catch {
         return [];
       }
@@ -24,6 +24,24 @@ function sessionStore(): ChangeStore {
     },
   };
 }
+
+/** UI preferences (panel position) per origin. */
+const localPrefs: PrefStore = {
+  async get(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? 'null') ?? undefined;
+    } catch {
+      return undefined;
+    }
+  },
+  async set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      /* ignore */
+    }
+  },
+};
 
 export function rememberOpen(open: boolean) {
   try {
@@ -42,13 +60,8 @@ export function wasOpen(): boolean {
   }
 }
 
-export interface RewordApi {
-  overlay: Overlay;
-  open(): Promise<void>;
-  close(): void;
-  toggle(): void;
-  getPrompt(): string;
-  getChanges(): Change[];
+export interface RewordApi extends Reword {
+  flavor: string;
 }
 
 declare global {
@@ -57,26 +70,23 @@ declare global {
   }
 }
 
-/** Create (once) the page-wide overlay and expose it as `window.Reword`. */
+/** Create (once) the page-wide editor and expose it as `window.Reword`. */
 export function boot(flavor: string): RewordApi {
   if (window.Reword) return window.Reword;
-  const overlay = new Overlay({ store: sessionStore(), flavor, onClose: () => rememberOpen(false) });
-  const api: RewordApi = {
-    overlay,
+  const reword = createReword({ store: sessionStore(), prefs: localPrefs, onClose: () => rememberOpen(false) });
+  const api: RewordApi = Object.assign(Object.create(reword) as Reword, {
+    flavor,
     open: async () => {
       rememberOpen(true);
-      await overlay.open();
+      await reword.open();
     },
-    close: () => overlay.close(),
-    toggle: () => (overlay.opened ? overlay.close() : void api.open()),
-    getPrompt: () => overlay.getPrompt(),
-    getChanges: () => overlay.getChanges(),
-  };
+    toggle: () => (reword.opened ? reword.close() : void api.open()),
+  });
   window.Reword = api;
   return api;
 }
 
-/** Alt+Shift+E toggles the overlay (used by the userscript and the drop-in). */
+/** Alt+Shift+E toggles the editor (used by the userscript and the drop-in). */
 export function bindHotkey(api: RewordApi) {
   window.addEventListener('keydown', (e) => {
     if (e.altKey && e.shiftKey && !e.metaKey && !e.ctrlKey && e.code === 'KeyE') {

@@ -1,6 +1,7 @@
 {
   "name": "reword",
-  "description": "Inline marketing copy editor: click text on any live page, edit it, copy one agent-ready prompt.",
+  "description": "Mark up any live page: edit copy in place, remove, move and annotate elements, then copy one agent-ready prompt.",
+  "license": "MIT",
   "private": true,
   "version": "0.1.0",
   "type": "module",

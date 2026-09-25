@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <title>Acme — Fixture landing page</title>
-<style>
+<style nonce="e2e">
   body { margin: 0; font: 16px/1.5 system-ui, sans-serif; background: #0b0b0f; color: #eee; }
   section { padding: 48px 24px; max-width: 880px; margin: 0 auto; }
   .badge { text-transform: uppercase; font-size: 11px; letter-spacing: .08em; background: #222; padding: 2px 8px; border-radius: 99px; }
   .btn { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px; border-radius: 10px; background: #6d5dfc; color: #fff; border: 0; font: inherit; }
   .grad { color: #9f8bff; }
+  .card { position: relative; }
+  .card-link { position: absolute; inset: 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 </style>
 </head>
@@ -26,6 +28,7 @@
     <h2>Simple pricing</h2>
     <ul><li>Unlimited seats</li><li>SOC 2 Type II</li></ul>
     <figure><figcaption>Prices in USD.</figcaption></figure>
+    <div class="card"><p id="card-copy">Trusted by 4,000 teams</p><a class="card-link" href="#customers" aria-label="Customers"></a></div>
   </section>
 </body>
 </html>

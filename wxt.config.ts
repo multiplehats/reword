@@ -4,7 +4,7 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   manifest: {
     name: 'Reword — inline copy editor',
-    description: 'Click any text on a live page, edit it in place, and copy one prompt your coding agent can apply.',
+    description: 'Edit copy, remove, move and annotate elements on a live page, then copy one prompt your coding agent can apply.',
     permissions: ['storage', 'scripting', 'activeTab'],
     host_permissions: ['http://*/*', 'https://*/*'],
     action: {

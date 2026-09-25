@@ -1,5 +1,5 @@
-import { Overlay } from '@/src/core/overlay';
-import type { Change, ChangeStore } from '@/src/core/types';
+import { createReword } from '@/src/core/reword';
+import type { ChangeStore, PrefStore } from '@/src/core/types';
 
 const OPEN_KEY = 'reword:open';
 const SITES_KEY = 'reword:sites';
@@ -14,7 +14,7 @@ function extensionStore(): ChangeStore {
   return {
     async load() {
       const got = await browser.storage.session.get(key);
-      return (got[key] as Change[] | undefined) ?? [];
+      return (got[key] as unknown[] | undefined) ?? [];
     },
     async save(changes) {
       if (changes.length) await browser.storage.session.set({ [key]: changes });
@@ -22,6 +22,15 @@ function extensionStore(): ChangeStore {
     },
   };
 }
+
+const prefs: PrefStore = {
+  async get(key) {
+    return (await browser.storage.local.get(key))[key];
+  },
+  async set(key, value) {
+    await browser.storage.local.set({ [key]: value });
+  },
+};
 
 async function enabledSites(): Promise<string[]> {
   const got = await browser.storage.local.get(SITES_KEY);
@@ -43,16 +52,23 @@ function isTyping(target: EventTarget | null): boolean {
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 }
 
+interface CommandMessage {
+  type: 'reword:command';
+  name: string;
+  params?: unknown;
+}
+
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],
   runAt: 'document_idle',
   main(ctx) {
     // If the background injects us again (tabs opened before install), WXT invalidates
-    // the previous instance, which destroys its overlay; this one takes over.
+    // the previous instance, which destroys its editor; this one takes over.
     const host = location.hostname;
     let siteEnabled = false;
-    const overlay = new Overlay({
+    const reword = createReword({
       store: extensionStore(),
+      prefs,
       onClose: () => session(false),
       siteToggle: {
         get: async () => (await enabledSites()).includes(host),
@@ -68,12 +84,21 @@ export default defineContentScript({
 
     const open = () => {
       session(true);
-      void overlay.open();
+      void reword.open();
     };
-    const toggle = () => (overlay.opened ? overlay.close() : open());
+    const toggle = () => (reword.opened ? reword.close() : open());
 
-    browser.runtime.onMessage.addListener((msg: unknown) => {
-      if ((msg as { type?: string })?.type === 'reword:toggle') toggle();
+    // Toggle from the toolbar, and commands from other extension contexts
+    // (a side panel, an agent bridge): { type: 'reword:command', name, params }.
+    browser.runtime.onMessage.addListener((msg: unknown, _sender, sendResponse) => {
+      const m = msg as { type?: string } | null;
+      if (m?.type === 'reword:toggle') toggle();
+      if (m?.type === 'reword:command') {
+        const { name, params } = m as CommandMessage;
+        void reword.executeCommand(name, params).then(sendResponse);
+        return true;
+      }
+      return undefined;
     });
 
     void enabledSites().then((sites) => {
@@ -90,6 +115,6 @@ export default defineContentScript({
       toggle();
     });
 
-    ctx.onInvalidated(() => overlay.destroy());
+    ctx.onInvalidated(() => reword.destroy());
   },
 });

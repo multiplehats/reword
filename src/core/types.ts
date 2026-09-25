@@ -1,45 +1,27 @@
-export type ChangeType = 'edit' | 'comment';
+import type { Change } from "./changes";
 
-export interface Change {
-  id: string;
-  type: ChangeType;
-  url: string;
-  pathname: string;
-  pageTitle: string;
-  selector: string;
-  fallbackSelector: string;
-  tag: string;
-  role: string;
-  /** Human label, e.g. "Headline (H1) — hero" */
-  label: string;
-  /** e.g. "section#pricing › “Simple pricing” › Button label" */
-  context: string;
-  originalText: string;
-  /** Empty for comments. */
-  newText: string;
-  /** Empty for edits. */
-  comment: string;
-  /** Individual text-node segments when the copy is split across elements. */
-  segments: string[];
-  /** Framework/tooling data attributes found on the element or its ancestors. */
-  sourceHints: string[];
-  createdAt: number;
-}
-
+/** Where a flavour keeps the change list (extension: storage.session per origin; others: sessionStorage). */
 export interface ChangeStore {
-  load(): Promise<Change[]>;
-  save(changes: Change[]): Promise<void>;
+  load(): Promise<unknown[]>;
+  save(changes: Record<string, unknown>[]): Promise<void>;
 }
 
-export interface OverlayOptions {
-  store?: ChangeStore;
-  /** Label shown in the panel footer, e.g. "extension" or "bookmarklet". */
-  flavor?: string;
-  /** Called when the user closes the panel. */
+/** Small key-value store for UI preferences such as the panel position. */
+export interface PrefStore {
+  get(key: string): Promise<unknown>;
+  set(key: string, value: unknown): Promise<void>;
+}
+
+export interface RewordOptions {
+  store: ChangeStore;
+  prefs?: PrefStore;
+  /** Called when the user closes the editor (not when it's destroyed). */
   onClose?: () => void;
-  /** Extension-only per-site toggle. Hidden when omitted. */
+  /** Extension-only per-site "E key" toggle. Hidden when omitted. */
   siteToggle?: {
     get(): Promise<boolean>;
     set(enabled: boolean): Promise<void>;
   };
 }
+
+export type { Change };
