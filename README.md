@@ -4,6 +4,10 @@ Click text on any live page, edit it in place, queue lots of small copy changes,
 
 It isn't a CMS. Nothing is written back to the site, and the site doesn't need a preview or dev mode. The overlay is injected from the browser. Your edits exist only in your tab until you copy the prompt.
 
+[![Reword demo: click a headline on a live page, edit it inline, leave a comment, then copy the agent prompt](docs/demo.gif)](docs/demo.mp4)
+
+<sub>Click the GIF for the full-quality video.</sub>
+
 ## Install
 
 ```bash
